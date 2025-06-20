@@ -1,8 +1,19 @@
-pandas==2.2.2
-numpy==1.26.4
-scikit-learn==1.5.0
-statsmodels==0.14.2
-tensorflow==2.16.1
+# requirements.txt
+# Using >= allows pip to pick up newer, compatible versions with Python 3.13 support.
+pandas>=2.2.2
+numpy>=1.26.4
+scikit-learn>=1.5.0
+statsmodels>=0.14.2
+
+# Keras 3.3.3 can use multiple backends.
+# We will install it separately and let it pull in a compatible backend.
 keras==3.3.3
-plotly==5.22.0
-streamlit==1.35.0
+
+# Plotly and Streamlit are generally quick to support new Python versions.
+plotly>=5.22.0
+streamlit>=1.35.0
+
+# TensorFlow 2.16.1 is NOT compatible with Python 3.13.
+# You must either remove this line or wait for a new TensorFlow release.
+# For now, this line is commented out. If Keras needs it, it will install a compatible version.
+# tensorflow==2.16.1
