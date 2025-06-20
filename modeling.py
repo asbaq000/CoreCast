@@ -5,18 +5,14 @@ from sklearn.ensemble import RandomForestRegressor
 from typing import Tuple
 
 def train_evaluate_arima(train_series: pd.Series, test_series: pd.Series) -> Tuple[any, pd.Series]:
-    """
-    Trains an ARIMA model and forecasts future values.
-    """
-    model = ARIMA(train_series, order=(5, 1, 0)) # Note: Order can be tuned
+
+    model = ARIMA(train_series, order=(5, 1, 0)) 
     fitted_model = model.fit()
     forecast = fitted_model.forecast(steps=len(test_series))
     return fitted_model, pd.Series(forecast, index=test_series.index)
 
 def train_evaluate_random_forest(train_df: pd.DataFrame, test_df: pd.DataFrame) -> Tuple[RandomForestRegressor, pd.Series]:
-    """
-    Trains a RandomForestRegressor model and returns the model and its predictions.
-    """
+   
     features = ['dayofweek', 'quarter', 'month', 'year', 'dayofyear', 'lag1', 'lag7', 'rolling_mean_7']
     target = 'Sales'
 
