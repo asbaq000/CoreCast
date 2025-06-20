@@ -2,13 +2,11 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from data_processing import load_and_preprocess_data, create_features
-# Removed train_evaluate_lstm as it requires TensorFlow/Keras
 from modeling import train_evaluate_arima, train_evaluate_random_forest
 from utils import calculate_evaluation_metrics
 
 st.set_page_config(page_title="CoreCast", layout="wide", initial_sidebar_state="expanded")
 
-# --- App State Initialization ---
 if 'forecast_df' not in st.session_state:
     st.session_state.forecast_df = None
 if 'fitted_model' not in st.session_state:
@@ -18,8 +16,6 @@ if 'model_option' not in st.session_state:
 if 'full_featured_data' not in st.session_state:
     st.session_state.full_featured_data = pd.DataFrame()
 
-
-# --- UI ---
 st.title("Automated Supply Chain Demand Forecasting")
 st.markdown("A professional tool to help local businesses predict demand and optimize inventory.")
 
@@ -35,7 +31,6 @@ if uploaded_file:
         st.header("Processed Sales Data Preview")
         st.dataframe(data.head())
 
-        # Removed "LSTM" from the options
         model_option = st.sidebar.selectbox(
             "2. Choose a Forecasting Model",
             ("ARIMA", "Random Forest"),
@@ -76,7 +71,6 @@ if uploaded_file:
             col2.metric("RMSE", f"{metrics['RMSE']:.2f}")
             col3.metric("MAPE", f"{metrics['MAPE']:.2f}%")
 
-        # --- Future Forecasting Section ---
         st.sidebar.header("4. Generate Future Forecast")
         future_periods = st.sidebar.number_input("Enter number of days to forecast:", min_value=7, max_value=365, value=30)
         
