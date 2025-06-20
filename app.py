@@ -2,11 +2,13 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from data_processing import load_and_preprocess_data, create_features
-from modeling import train_evaluate_arima, train_evaluate_random_forest, train_evaluate_lstm
+# Removed train_evaluate_lstm as it requires TensorFlow/Keras
+from modeling import train_evaluate_arima, train_evaluate_random_forest
 from utils import calculate_evaluation_metrics
 
 st.set_page_config(page_title="CoreCast", layout="wide", initial_sidebar_state="expanded")
 
+# --- App State Initialization ---
 if 'forecast_df' not in st.session_state:
     st.session_state.forecast_df = None
 if 'fitted_model' not in st.session_state:
@@ -16,6 +18,8 @@ if 'model_option' not in st.session_state:
 if 'full_featured_data' not in st.session_state:
     st.session_state.full_featured_data = pd.DataFrame()
 
+
+# --- UI ---
 st.title("Automated Supply Chain Demand Forecasting")
 st.markdown("A professional tool to help local businesses predict demand and optimize inventory.")
 
@@ -31,9 +35,10 @@ if uploaded_file:
         st.header("Processed Sales Data Preview")
         st.dataframe(data.head())
 
+        # Removed "LSTM" from the options
         model_option = st.sidebar.selectbox(
             "2. Choose a Forecasting Model",
-            ("ARIMA", "Random Forest", "LSTM"),
+            ("ARIMA", "Random Forest"),
             key="model_option"
         )
         
@@ -47,15 +52,9 @@ if uploaded_file:
                     st.session_state.fitted_model = fitted_model
 
                 elif model_option == "Random Forest":
-
                     fitted_model, forecast_series = train_evaluate_random_forest(train_df, test_df)
                     st.session_state.fitted_model = fitted_model
                 
-                elif model_option == "LSTM":
-                    forecast_series = train_evaluate_lstm(train_df['Sales'], test_df['Sales'])
-                    st.session_state.fitted_model = None 
-                    st.warning("Note: Future forecasting for LSTM is not implemented.", icon="⚠️")
-
             st.success("Evaluation forecast generated successfully!")
             st.session_state.forecast_df = pd.DataFrame({'Actual': test_df['Sales'], 'Forecast': forecast_series})
 
@@ -77,12 +76,13 @@ if uploaded_file:
             col2.metric("RMSE", f"{metrics['RMSE']:.2f}")
             col3.metric("MAPE", f"{metrics['MAPE']:.2f}%")
 
+        # --- Future Forecasting Section ---
         st.sidebar.header("4. Generate Future Forecast")
         future_periods = st.sidebar.number_input("Enter number of days to forecast:", min_value=7, max_value=365, value=30)
         
         if st.sidebar.button("Forecast Future", key="future_forecast", use_container_width=True):
             if st.session_state.fitted_model is None:
-                st.sidebar.error(f"A {model_option} model has not been trained yet, or is not supported for future forecasting. Please run Step 3.")
+                st.sidebar.error(f"A {model_option} model has not been trained yet. Please run Step 3.")
             else:
                 with st.spinner("Generating future forecast..."):
                     future_forecast = None
@@ -93,7 +93,6 @@ if uploaded_file:
                     
                     elif model_option == "Random Forest":
                         features_list = ['dayofweek', 'quarter', 'month', 'year', 'dayofyear', 'lag1', 'lag7', 'rolling_mean_7']
-                        
                         history = st.session_state.full_featured_data.copy()
                         future_predictions = []
                         
@@ -110,7 +109,7 @@ if uploaded_file:
                             next_step_features['lag1'] = history['Sales'].iloc[-1]
                             next_step_features['lag7'] = history['Sales'].iloc[-7]
                             next_step_features['rolling_mean_7'] = history['Sales'].rolling(window=7).mean().iloc[-1]
-
+                            
                             prediction = st.session_state.fitted_model.predict(next_step_features[features_list])[0]
                             future_predictions.append(prediction)
                             
@@ -128,7 +127,5 @@ if uploaded_file:
                     fig_future.update_layout(title="Future Demand", xaxis_title="Date", yaxis_title="Predicted Sales")
                     st.plotly_chart(fig_future, use_container_width=True)
                     st.dataframe(future_df)
-
 else:
     st.info("Upload a CSV file to begin the forecasting process.")
-
